@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khảo Sát & Phỏng Vấn – Giải Bóng Đá 26/3</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #00C853;
+  --green-dim: rgba(0,200,83,0.12);
+  --blue: #2979FF;
+  --blue-dim: rgba(41,121,255,0.12);
+  --black: #080A0E;
+  --card: #0F1318;
+  --border: rgba(255,255,255,0.07);
+  --text: #EEF0F5;
+  --muted: #6B7A96;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 45% at 50% -5%,rgba(0,200,83,0.09) 0%,transparent 65%);
+}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.022;
+  background-image:linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px);
+  background-size:60px 60px;}
+
+/* PROGRESS */
+.prog-wrap{position:fixed;top:0;left:0;right:0;z-index:100;height:3px;background:rgba(255,255,255,0.05);}
+.prog-bar{height:100%;transition:width 0.5s cubic-bezier(.4,0,.2,1);box-shadow:0 0 10px currentColor;}
+.prog-bar.survey{background:var(--green);box-shadow:0 0 10px var(--green);}
+.prog-bar.interview{background:var(--blue);box-shadow:0 0 10px var(--blue);}
+
+.wrap{position:relative;z-index:1;max-width:660px;margin:0 auto;padding:48px 20px 80px;}
+
+/* HERO */
+.hero{text-align:center;margin-bottom:40px;animation:fadeDown .6s ease both;}
+.pill-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:6px 14px;border-radius:100px;}
+.pill.green{background:var(--green-dim);border:1px solid rgba(0,200,83,0.25);color:var(--green);}
+.pill.blue{background:var(--blue-dim);border:1px solid rgba(41,121,255,0.25);color:#64B5F6;}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,8vw,72px);line-height:.92;letter-spacing:2px;}
+.hero h1 .g{color:var(--green);} .hero h1 .b{color:#64B5F6;}
+.hero p{color:var(--muted);font-size:14px;margin-top:14px;line-height:1.7;}
+
+/* PHASE INDICATOR */
+.phase-bar{display:flex;gap:0;margin-bottom:32px;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.phase{flex:1;padding:14px 16px;text-align:center;cursor:default;transition:all .3s;}
+.phase .ph-icon{font-size:20px;margin-bottom:4px;}
+.phase .ph-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.phase .ph-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.phase.survey-phase{background:rgba(0,200,83,0.05);}
+.phase.survey-phase.active{background:var(--green-dim);border-bottom:2px solid var(--green);}
+.phase.survey-phase.active .ph-label{color:var(--green);}
+.phase.survey-phase.done{background:rgba(0,200,83,0.08);}
+.phase.survey-phase.done .ph-label{color:var(--green);opacity:.6;}
+.phase.interview-phase{background:rgba(41,121,255,0.05);}
+.phase.interview-phase.active{background:var(--blue-dim);border-bottom:2px solid var(--blue);}
+.phase.interview-phase.active .ph-label{color:#64B5F6;}
+.phase-divider{width:1px;background:var(--border);}
+
+/* STEP DOTS */
+.step-dots{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:28px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .3s;}
+.dot.active-s{background:var(--green);box-shadow:0 0 8px var(--green);}
+.dot.done-s{background:rgba(0,200,83,0.4);}
+.dot.active-i{background:#64B5F6;box-shadow:0 0 8px #64B5F6;}
+.dot.done-i{background:rgba(100,181,246,0.4);}
+.dot-sep{width:20px;height:1px;background:var(--border);}
+
+/* CARD */
+.q-screen{display:none;animation:slideIn .35s ease both;}
+.q-screen.active{display:block;}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.q-card{border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.q-card.survey-card{background:var(--card);border:1px solid rgba(0,200,83,0.12);}
+.q-card.interview-card{background:#0C1018;border:1px solid rgba(41,121,255,0.15);}
+
+.q-top{padding:26px 26px 0;}
+.q-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.q-tag{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;display:flex;align-items:center;gap:8px;}
+.q-tag.s{color:var(--green);} .q-tag.s::before{content:'';width:14px;height:2px;background:var(--green);border-radius:1px;}
+.q-tag.i{color:#64B5F6;} .q-tag.i::before{content:'';width:14px;height:2px;background:#64B5F6;border-radius:1px;}
+.q-counter{font-size:12px;color:var(--muted);}
+.q-counter strong{color:var(--text);}
+.q-text{font-size:17px;font-weight:500;line-height:1.5;margin-bottom:24px;}
+
+/* OPTIONS */
+.opts{display:flex;flex-direction:column;gap:9px;padding:0 26px 26px;}
+.opt{display:flex;align-items:center;gap:13px;padding:13px 16px;
+  background:rgba(255,255,255,0.025);border:1.5px solid rgba(255,255,255,0.06);
+  border-radius:11px;cursor:pointer;transition:all .18s;user-select:none;position:relative;overflow:hidden;}
+.opt::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;}
+.survey-card .opt::before{background:linear-gradient(135deg,rgba(0,200,83,.06),transparent);}
+.interview-card .opt::before{background:linear-gradient(135deg,rgba(41,121,255,.06),transparent);}
+.opt:hover::before{opacity:1;}
+.survey-card .opt:hover{border-color:rgba(0,200,83,.25);transform:translateX(3px);}
+.interview-card .opt:hover{border-color:rgba(41,121,255,.25);transform:translateX(3px);}
+.survey-card .opt.selected{border-color:var(--green);background:rgba(0,200,83,.08);}
+.interview-card .opt.selected{border-color:#2979FF;background:rgba(41,121,255,.08);}
+.opt.selected::before{opacity:1;}
+
+.opt-letter{width:30px;height:30px;border-radius:7px;border:1.5px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--muted);
+  flex-shrink:0;transition:all .18s;}
+.survey-card .opt.selected .opt-letter{background:var(--green);border-color:var(--green);color:#000;box-shadow:0 3px 10px rgba(0,200,83,.3);}
+.interview-card .opt.selected .opt-letter{background:#2979FF;border-color:#2979FF;color:#fff;box-shadow:0 3px 10px rgba(41,121,255,.3);}
+.opt-text{font-size:14px;line-height:1.4;}
+.opt.selected .opt-text{font-weight:500;}
+
+/* TEXT INPUT */
+.info-fields{padding:0 26px 26px;display:flex;flex-direction:column;gap:13px;}
+.field-wrap label{display:block;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.field-wrap input{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:10px;padding:12px 15px;font-size:15px;font-family:'DM Sans',sans-serif;
+  color:var(--text);outline:none;transition:all .2s;}
+.field-wrap input::placeholder{color:var(--muted);}
+.survey-card .field-wrap input:focus{border-color:var(--green);background:rgba(0,200,83,.04);}
+.interview-card .field-wrap input:focus{border-color:#2979FF;background:rgba(41,121,255,.04);}
+
+/* TRANSITION SCREEN */
+.transition-screen{display:none;text-align:center;padding:56px 24px;animation:fadeUp .5s ease both;}
+.transition-screen .icon{font-size:72px;display:block;margin-bottom:20px;}
+.transition-screen h2{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:2px;margin-bottom:10px;}
+.transition-screen h2 span{color:#64B5F6;}
+.transition-screen p{color:var(--muted);font-size:14px;line-height:1.8;margin-bottom:28px;max-width:420px;margin-left:auto;margin-right:auto;}
+.btn-continue{background:#2979FF;color:#fff;border:none;padding:14px 36px;border-radius:100px;
+  font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;cursor:pointer;transition:all .22s;
+  box-shadow:0 4px 18px rgba(41,121,255,.3);}
+.btn-continue:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(41,121,255,.4);}
+
+/* NAV */
+.nav{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 26px;border-top:1px solid var(--border);background:rgba(255,255,255,.01);}
+.btn-prev{background:none;border:1.5px solid var(--border);color:var(--muted);padding:10px 20px;
+  border-radius:100px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-prev:hover{border-color:rgba(255,255,255,.2);color:var(--text);}
+.btn-prev:disabled{opacity:.25;pointer-events:none;}
+.btn-next-s{background:var(--green);color:#000;border:none;padding:11px 26px;border-radius:100px;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;cursor:pointer;transition:all .22s;
+  box-shadow:0 4px 14px rgba(0,200,83,.25);}
+.btn-next-s:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,200,83,.35);}
+.btn-next-s:disabled{opacity:.3;pointer-events:none;transform:none;}
+.btn-next-i{background:#2979FF;color:#fff;border:none;padding:11px 26px;border-radius:100px;
+  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;cursor:pointer;transition:all .22s;
+  box-shadow:0 4px 14px rgba(41,121,255,.25);}
+.btn-next-i:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(41,121,255,.35);}
+.btn-next-i:disabled{opacity:.3;pointer-events:none;transform:none;}
+.skip-btn{background:none;border:none;color:var(--muted);font-size:11px;font-family:'DM Sans',sans-serif;
+  cursor:pointer;text-decoration:underline;transition:color .15s;}
+.skip-btn:hover{color:var(--text);}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:64px 24px;animation:fadeUp .5s ease both;}
+.success-screen .ball{font-size:80px;display:block;margin-bottom:22px;animation:bounce 1.2s ease infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-13px) rotate(8deg)}}
+.success-screen h2{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:var(--green);margin-bottom:10px;}
+.success-screen p{color:var(--muted);font-size:15px;line-height:1.8;margin-bottom:26px;}
+.btn-restart{background:transparent;border:1.5px solid var(--green);color:var(--green);
+  padding:12px 30px;border-radius:100px;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-restart:hover{background:rgba(0,200,83,.1);}
+</style>
+</head>
+<body>
+
+<div class="prog-wrap"><div class="prog-bar survey" id="progBar"></div></div>
+<div class="grid-bg"></div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="pill-row">
+      <div class="pill green">⚽ Khảo sát · 9 câu</div>
+      <div class="pill blue">🎤 Phỏng vấn · 6 câu</div>
+    </div>
+    <h1>BÓNG ĐÁ<br><span class="g">SINH VIÊN</span> <span class="b">26/3</span></h1>
+    <p>DHOT19A · Hoàn thành cả 2 phần để giúp nhóm tổ chức thật đỉnh 🏆</p>
+  </div>
+
+  <!-- PHASE BAR -->
+  <div class="phase-bar" id="phaseBar">
+    <div class="phase survey-phase active" id="phase-survey">
+      <div class="ph-icon">📋</div>
+      <div class="ph-label">Khảo sát</div>
+      <div class="ph-sub">9 câu · ~2 phút</div>
+    </div>
+    <div class="phase-divider"></div>
+    <div class="phase interview-phase" id="phase-interview">
+      <div class="ph-icon">🎤</div>
+      <div class="ph-label">Phỏng vấn</div>
+      <div class="ph-sub">6 câu · ~2 phút</div>
+    </div>
+  </div>
+
+  <!-- STEP DOTS -->
+  <div class="step-dots" id="stepDots"></div>
+
+  <!-- ════════ SURVEY SCREENS ════════ -->
+
+  <!-- S0: Thông tin -->
+  <div class="q-screen active" id="screen-s0">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Thông tin</div><div class="q-counter"><strong>1</strong>/9</div></div>
+        <div class="q-text">Cho mình biết thông tin của bạn nhé!</div>
+      </div>
+      <div class="info-fields">
+        <div class="field-wrap"><label>Họ và tên *</label><input type="text" id="s-name" placeholder="Nguyễn Văn A..."></div>
+        <div class="field-wrap"><label>MSSV</label><input type="text" id="s-mssv" placeholder="2280600000"></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" disabled>← Quay lại</button>
+        <button class="btn-next-s" onclick="goNext('s0')">Tiếp theo →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- S1 -->
+  <div class="q-screen" id="screen-s1">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>2</strong>/9</div></div>
+        <div class="q-text">Bạn có quan tâm đến giải bóng đá 26/3 của lớp không?</div>
+      </div>
+      <div class="opts" id="opts-s1">
+        <div class="opt" onclick="pick(this,'s1')"><div class="opt-letter">A</div><span class="opt-text">Rất quan tâm 🔥</span></div>
+        <div class="opt" onclick="pick(this,'s1')"><div class="opt-letter">B</div><span class="opt-text">Quan tâm</span></div>
+        <div class="opt" onclick="pick(this,'s1')"><div class="opt-letter">C</div><span class="opt-text">Bình thường</span></div>
+        <div class="opt" onclick="pick(this,'s1')"><div class="opt-letter">D</div><span class="opt-text">Không quan tâm</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s1')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s1" onclick="goNext('s1')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s1')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="q-screen" id="screen-s2">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>3</strong>/9</div></div>
+        <div class="q-text">Bạn muốn tham gia với vai trò nào?</div>
+      </div>
+      <div class="opts" id="opts-s2">
+        <div class="opt" onclick="pick(this,'s2')"><div class="opt-letter">A</div><span class="opt-text">⚽ Cầu thủ thi đấu</span></div>
+        <div class="opt" onclick="pick(this,'s2')"><div class="opt-letter">B</div><span class="opt-text">📣 Cổ động viên</span></div>
+        <div class="opt" onclick="pick(this,'s2')"><div class="opt-letter">C</div><span class="opt-text">🚫 Không tham gia</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s2')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s2" onclick="goNext('s2')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s2')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="q-screen" id="screen-s3">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>4</strong>/9</div></div>
+        <div class="q-text">Nếu thi đấu, bạn muốn chơi vị trí nào?</div>
+      </div>
+      <div class="opts" id="opts-s3">
+        <div class="opt" onclick="pick(this,'s3')"><div class="opt-letter">A</div><span class="opt-text">🔴 Tiền đạo</span></div>
+        <div class="opt" onclick="pick(this,'s3')"><div class="opt-letter">B</div><span class="opt-text">🟡 Tiền vệ</span></div>
+        <div class="opt" onclick="pick(this,'s3')"><div class="opt-letter">C</div><span class="opt-text">🔵 Hậu vệ</span></div>
+        <div class="opt" onclick="pick(this,'s3')"><div class="opt-letter">D</div><span class="opt-text">🟢 Thủ môn</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s3')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s3" onclick="goNext('s3')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s3')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="q-screen" id="screen-s4">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>5</strong>/9</div></div>
+        <div class="q-text">Thời gian tổ chức giải nên vào lúc nào?</div>
+      </div>
+      <div class="opts" id="opts-s4">
+        <div class="opt" onclick="pick(this,'s4')"><div class="opt-letter">A</div><span class="opt-text">🌅 Buổi sáng</span></div>
+        <div class="opt" onclick="pick(this,'s4')"><div class="opt-letter">B</div><span class="opt-text">☀️ Buổi chiều</span></div>
+        <div class="opt" onclick="pick(this,'s4')"><div class="opt-letter">C</div><span class="opt-text">🌙 Buổi tối</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s4')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s4" onclick="goNext('s4')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s4')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="q-screen" id="screen-s5">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>6</strong>/9</div></div>
+        <div class="q-text">Mỗi trận đấu nên kéo dài bao lâu?</div>
+      </div>
+      <div class="opts" id="opts-s5">
+        <div class="opt" onclick="pick(this,'s5')"><div class="opt-letter">A</div><span class="opt-text">⏱ 20 phút</span></div>
+        <div class="opt" onclick="pick(this,'s5')"><div class="opt-letter">B</div><span class="opt-text">⏱ 30 phút</span></div>
+        <div class="opt" onclick="pick(this,'s5')"><div class="opt-letter">C</div><span class="opt-text">⏱ 40 phút</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s5')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s5" onclick="goNext('s5')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s5')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="q-screen" id="screen-s6">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>7</strong>/9</div></div>
+        <div class="q-text">Bạn thích hình thức thi đấu nào hơn?</div>
+      </div>
+      <div class="opts" id="opts-s6">
+        <div class="opt" onclick="pick(this,'s6')"><div class="opt-letter">A</div><span class="opt-text">⚡ Đấu loại trực tiếp</span></div>
+        <div class="opt" onclick="pick(this,'s6')"><div class="opt-letter">B</div><span class="opt-text">🔄 Đấu vòng tròn</span></div>
+        <div class="opt" onclick="pick(this,'s6')"><div class="opt-letter">C</div><span class="opt-text">🏟️ Vòng bảng + loại trực tiếp</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s6')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s6" onclick="goNext('s6')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s6')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 -->
+  <div class="q-screen" id="screen-s7">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>8</strong>/9</div></div>
+        <div class="q-text">Bạn có sẵn sàng đóng góp chi phí không?</div>
+      </div>
+      <div class="opts" id="opts-s7">
+        <div class="opt" onclick="pick(this,'s7')"><div class="opt-letter">A</div><span class="opt-text">✅ Có</span></div>
+        <div class="opt" onclick="pick(this,'s7')"><div class="opt-letter">B</div><span class="opt-text">❌ Không</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s7')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s7" onclick="goNext('s7')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s7')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8 -->
+  <div class="q-screen" id="screen-s8">
+    <div class="q-card survey-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag s">Khảo sát</div><div class="q-counter"><strong>9</strong>/9</div></div>
+        <div class="q-text">Mức đóng góp hợp lý theo bạn là bao nhiêu?</div>
+      </div>
+      <div class="opts" id="opts-s8">
+        <div class="opt" onclick="pick(this,'s8')"><div class="opt-letter">A</div><span class="opt-text">💵 20.000đ</span></div>
+        <div class="opt" onclick="pick(this,'s8')"><div class="opt-letter">B</div><span class="opt-text">💵 30.000đ</span></div>
+        <div class="opt" onclick="pick(this,'s8')"><div class="opt-letter">C</div><span class="opt-text">💵 50.000đ</span></div>
+        <div class="opt" onclick="pick(this,'s8')"><div class="opt-letter">D</div><span class="opt-text">💵 100.000đ</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('s8')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-s" id="nx-s8" onclick="goNext('s8')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('s8')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ TRANSITION ════ -->
+  <div class="transition-screen" id="transitionScreen">
+    <span class="icon">🎤</span>
+    <h2>Xong phần <span>Phỏng Vấn</span>!</h2>
+    <p>Khảo sát đã hoàn thành ✅<br>Tiếp theo là <strong style="color:#64B5F6">6 câu phỏng vấn</strong> ngắn gọn – chỉ mất thêm 2 phút thôi!</p>
+    <button class="btn-continue" onclick="startInterview()">Bắt đầu Phỏng Vấn →</button>
+  </div>
+
+  <!-- ════════ INTERVIEW SCREENS ════════ -->
+
+  <!-- I0 -->
+  <div class="q-screen" id="screen-i0">
+    <div class="q-card interview-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag i">Phỏng vấn</div><div class="q-counter"><strong>1</strong>/6</div></div>
+        <div class="q-text">Bạn có muốn tham gia giải đấu 26/3 không? Lý do chính là gì?</div>
+      </div>
+      <div class="opts" id="opts-i0">
+        <div class="opt" onclick="pick(this,'i0')"><div class="opt-letter">A</div><span class="opt-text">✅ Có – Muốn giao lưu, gắn kết với lớp</span></div>
+        <div class="opt" onclick="pick(this,'i0')"><div class="opt-letter">B</div><span class="opt-text">✅ Có – Đam mê thể thao, muốn thi đấu</span></div>
+        <div class="opt" onclick="pick(this,'i0')"><div class="opt-letter">C</div><span class="opt-text">🤔 Tuỳ – Phụ thuộc vào lịch học</span></div>
+        <div class="opt" onclick="pick(this,'i0')"><div class="opt-letter">D</div><span class="opt-text">❌ Không – Không hứng thú với bóng đá</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('i0')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-i" id="nx-i0" onclick="goNext('i0')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('i0')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I1 -->
+  <div class="q-screen" id="screen-i1">
+    <div class="q-card interview-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag i">Phỏng vấn</div><div class="q-counter"><strong>2</strong>/6</div></div>
+        <div class="q-text">Theo bạn thời gian và địa điểm nào phù hợp nhất?</div>
+      </div>
+      <div class="opts" id="opts-i1">
+        <div class="opt" onclick="pick(this,'i1')"><div class="opt-letter">A</div><span class="opt-text">🌅 Sáng sớm tại sân trường (7h–9h)</span></div>
+        <div class="opt" onclick="pick(this,'i1')"><div class="opt-letter">B</div><span class="opt-text">☀️ Chiều tại sân trường (15h–17h)</span></div>
+        <div class="opt" onclick="pick(this,'i1')"><div class="opt-letter">C</div><span class="opt-text">🌙 Tối cuối tuần tại sân thuê ngoài</span></div>
+        <div class="opt" onclick="pick(this,'i1')"><div class="opt-letter">D</div><span class="opt-text">🏟️ Cuối tuần cả ngày – linh hoạt</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('i1')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-i" id="nx-i1" onclick="goNext('i1')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('i1')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I2 -->
+  <div class="q-screen" id="screen-i2">
+    <div class="q-card interview-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag i">Phỏng vấn</div><div class="q-counter"><strong>3</strong>/6</div></div>
+        <div class="q-text">Bạn thích hình thức thi đấu nào nhất?</div>
+      </div>
+      <div class="opts" id="opts-i2">
+        <div class="opt" onclick="pick(this,'i2')"><div class="opt-letter">A</div><span class="opt-text">⚡ Loại trực tiếp – căng thẳng, kịch tính</span></div>
+        <div class="opt" onclick="pick(this,'i2')"><div class="opt-letter">B</div><span class="opt-text">🔄 Vòng tròn – công bằng, nhiều trận hơn</span></div>
+        <div class="opt" onclick="pick(this,'i2')"><div class="opt-letter">C</div><span class="opt-text">🏟️ Vòng bảng + loại trực tiếp – tốt nhất</span></div>
+        <div class="opt" onclick="pick(this,'i2')"><div class="opt-letter">D</div><span class="opt-text">🤷 Không quan trọng, miễn vui là được</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('i2')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-i" id="nx-i2" onclick="goNext('i2')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('i2')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I3 -->
+  <div class="q-screen" id="screen-i3">
+    <div class="q-card interview-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag i">Phỏng vấn</div><div class="q-counter"><strong>4</strong>/6</div></div>
+        <div class="q-text">Bạn sẵn sàng đóng bao nhiêu và kỳ vọng giải thưởng như thế nào?</div>
+      </div>
+      <div class="opts" id="opts-i3">
+        <div class="opt" onclick="pick(this,'i3')"><div class="opt-letter">A</div><span class="opt-text">💵 20.000đ – Cúp + Giấy khen là đủ</span></div>
+        <div class="opt" onclick="pick(this,'i3')"><div class="opt-letter">B</div><span class="opt-text">💵 30.000đ – Thêm quà tặng nhỏ</span></div>
+        <div class="opt" onclick="pick(this,'i3')"><div class="opt-letter">C</div><span class="opt-text">💵 50.000đ – Tiền mặt + Cúp xịn</span></div>
+        <div class="opt" onclick="pick(this,'i3')"><div class="opt-letter">D</div><span class="opt-text">💵 100.000đ – Giải thưởng hấp dẫn thật sự</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('i3')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-i" id="nx-i3" onclick="goNext('i3')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('i3')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I4 -->
+  <div class="q-screen" id="screen-i4">
+    <div class="q-card interview-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag i">Phỏng vấn</div><div class="q-counter"><strong>5</strong>/6</div></div>
+        <div class="q-text">Bạn muốn tham gia với vai trò gì trong sự kiện này?</div>
+      </div>
+      <div class="opts" id="opts-i4">
+        <div class="opt" onclick="pick(this,'i4')"><div class="opt-letter">A</div><span class="opt-text">⚽ Cầu thủ thi đấu chính thức</span></div>
+        <div class="opt" onclick="pick(this,'i4')"><div class="opt-letter">B</div><span class="opt-text">📣 Cổ động viên cháy hết mình</span></div>
+        <div class="opt" onclick="pick(this,'i4')"><div class="opt-letter">C</div><span class="opt-text">🛠️ Hỗ trợ ban tổ chức hậu cần</span></div>
+        <div class="opt" onclick="pick(this,'i4')"><div class="opt-letter">D</div><span class="opt-text">📸 Chụp ảnh / Quay video kỷ niệm</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('i4')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-i" id="nx-i4" onclick="goNext('i4')" disabled>Tiếp →</button>
+          <button class="skip-btn" onclick="skip('i4')">Bỏ qua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I5 -->
+  <div class="q-screen" id="screen-i5">
+    <div class="q-card interview-card">
+      <div class="q-top">
+        <div class="q-meta"><div class="q-tag i">Phỏng vấn</div><div class="q-counter"><strong>6</strong>/6</div></div>
+        <div class="q-text">Bạn có đề xuất gì để giải đấu diễn ra thành công?</div>
+      </div>
+      <div class="opts" id="opts-i5">
+        <div class="opt" onclick="pick(this,'i5')"><div class="opt-letter">A</div><span class="opt-text">👕 Có đồng phục đội để nhận diện dễ hơn</span></div>
+        <div class="opt" onclick="pick(this,'i5')"><div class="opt-letter">B</div><span class="opt-text">🎵 Có MC + âm thanh sôi động</span></div>
+        <div class="opt" onclick="pick(this,'i5')"><div class="opt-letter">C</div><span class="opt-text">📸 Có người chụp ảnh, quay video kỷ niệm</span></div>
+        <div class="opt" onclick="pick(this,'i5')"><div class="opt-letter">D</div><span class="opt-text">🍔 Có đồ ăn nhẹ, nước uống tại chỗ</span></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="goPrev('i5')">← Quay lại</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <button class="btn-next-i" id="nx-i5" onclick="submitAll()" disabled>GỬI TẤT CẢ ⚽</button>
+          <button class="skip-btn" onclick="submitAll()">Bỏ qua & Gửi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <span class="ball">⚽</span>
+    <h2>HOÀN THÀNH! 🎉</h2>
+    <p>Cảm ơn bạn đã hoàn thành cả <strong style="color:var(--green)">Khảo sát</strong> lẫn <strong style="color:#64B5F6">Phỏng vấn</strong>!<br>Dữ liệu đã được lưu vào hệ thống 📊</p>
+    <button class="btn-restart" onclick="restart()">↩ Làm lại từ đầu</button>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5GYHXfLb5QJztoWeDkn_ei3rgtv4aQhF6USbpj0E5S702kOyqSW0UL_Y2MKHHcwnxvA/exec';
+
+// Screens order
+const SURVEY_SCREENS = ['s0','s1','s2','s3','s4','s5','s6','s7','s8'];
+const INTERVIEW_SCREENS = ['i0','i1','i2','i3','i4','i5'];
+const ALL = [...SURVEY_SCREENS, 'transition', ...INTERVIEW_SCREENS];
+const TOTAL_DOTS = SURVEY_SCREENS.length + INTERVIEW_SCREENS.length;
+
+let current = 's0';
+const answers = {};
+
+// Build step dots
+function buildDots() {
+  const wrap = document.getElementById('stepDots');
+  wrap.innerHTML = '';
+  SURVEY_SCREENS.forEach((id,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot'; d.id = 'dot-'+id;
+    wrap.appendChild(d);
+  });
+  const sep = document.createElement('div'); sep.className = 'dot-sep';
+  wrap.appendChild(sep);
+  INTERVIEW_SCREENS.forEach((id,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot'; d.id = 'dot-'+id;
+    wrap.appendChild(d);
+  });
+  updateDots();
+}
+
+function updateDots() {
+  const sIdx = SURVEY_SCREENS.indexOf(current);
+  const iIdx = INTERVIEW_SCREENS.indexOf(current);
+
+  SURVEY_SCREENS.forEach((id,i) => {
+    const d = document.getElementById('dot-'+id);
+    if (!d) return;
+    d.className = 'dot' + (i < sIdx ? ' done-s' : i === sIdx ? ' active-s' : '');
+  });
+  INTERVIEW_SCREENS.forEach((id,i) => {
+    const d = document.getElementById('dot-'+id);
+    if (!d) return;
+    d.className = 'dot' + (i < iIdx ? ' done-i' : i === iIdx ? ' active-i' : '');
+  });
+
+  // Progress bar
+  let pct = 0;
+  if (sIdx >= 0) pct = (sIdx / (TOTAL_DOTS - 1)) * 100;
+  if (iIdx >= 0) pct = ((SURVEY_SCREENS.length + iIdx) / (TOTAL_DOTS - 1)) * 100;
+  const bar = document.getElementById('progBar');
+  bar.style.width = pct + '%';
+  bar.className = 'prog-bar ' + (iIdx >= 0 ? 'interview' : 'survey');
+
+  // Phase bar
+  const inInterview = iIdx >= 0;
+  document.getElementById('phase-survey').className = 'phase survey-phase' + (inInterview ? ' done' : ' active');
+  document.getElementById('phase-interview').className = 'phase interview-phase' + (inInterview ? ' active' : '');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.q-screen, .transition-screen, .success-screen').forEach(el => {
+    el.classList.remove('active');
+    el.style.display = '';
+  });
+  if (id === 'transition') {
+    document.getElementById('transitionScreen').style.display = 'block';
+  } else if (id === 'success') {
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('progBar').style.width = '100%';
+    document.getElementById('stepDots').style.display = 'none';
+    document.getElementById('phaseBar').style.display = 'none';
+    document.querySelector('.hero').style.display = 'none';
+  } else {
+    const el = document.getElementById('screen-' + id);
+    el.classList.add('active');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function pick(el, key) {
+  document.querySelectorAll('#opts-'+key+' .opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[key] = el.querySelector('.opt-text').textContent.trim();
+  const btn = document.getElementById('nx-'+key);
+  if (btn) btn.disabled = false;
+}
+
+function goNext(id) {
+  if (id === 's0') {
+    const name = document.getElementById('s-name').value.trim();
+    if (!name) {
+      document.getElementById('s-name').style.borderColor='#FF5252';
+      setTimeout(()=>document.getElementById('s-name').style.borderColor='',2000);
+      return;
+    }
+    answers.name = name;
+    answers.mssv = document.getElementById('s-mssv').value.trim();
+  }
+  navigateFrom(id, 1);
+}
+function goPrev(id) { navigateFrom(id, -1); }
+function skip(id) { navigateFrom(id, 1); }
+
+function navigateFrom(id, dir) {
+  const isSurvey = id.startsWith('s');
+  const list = isSurvey ? SURVEY_SCREENS : INTERVIEW_SCREENS;
+  const idx = list.indexOf(id);
+  const nextIdx = idx + dir;
+
+  if (isSurvey) {
+    if (nextIdx >= list.length) { current = 'transition'; showScreen('transition'); updateDots(); return; }
+    if (nextIdx < 0) return;
+    current = list[nextIdx];
+  } else {
+    if (nextIdx >= list.length) { submitAll(); return; }
+    if (nextIdx < 0) { current = 'transition'; showScreen('transition'); updateDots(); return; }
+    current = list[nextIdx];
+  }
+  showScreen(current);
+  updateDots();
+}
+
+function startInterview() {
+  current = 'i0';
+  showScreen('i0');
+  updateDots();
+}
+
+async function submitAll() {
+  showScreen('success');
+  const payload = {
+    loai: 'Tổng hợp',
+    q1: answers.name||'',
+    q2: answers.s1||'',
+    q3: answers.s2||'',
+    q4: answers.s3||'',
+    q5: answers.s4||'',
+    q6: answers.s5||'',
+    q7: answers.s6||'',
+    q8: answers.s7||'',
+    q9: answers.s8||'',
+    pv1: answers.i0||'',
+    pv2: answers.i1||'',
+    pv3: answers.i2||'',
+    pv4: answers.i3||'',
+    pv5: answers.i4||'',
+    pv6: answers.i5||'',
+    mssv: answers.mssv||'',
+  };
+  try {
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  } catch(e){}
+}
+
+function restart() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('[id^="nx-"]').forEach(b => b.disabled = true);
+  document.getElementById('s-name').value='';
+  document.getElementById('s-mssv').value='';
+  document.getElementById('successScreen').style.display='none';
+  document.getElementById('stepDots').style.display='';
+  document.getElementById('phaseBar').style.display='';
+  document.querySelector('.hero').style.display='';
+  current = 's0';
+  showScreen('s0');
+  buildDots();
+}
+
+buildDots();
+showScreen('s0');
+</script>
+</body>
+</html>
